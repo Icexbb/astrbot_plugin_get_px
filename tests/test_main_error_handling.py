@@ -410,6 +410,7 @@ class MainErrorHandlingTest(unittest.IsolatedAsyncioTestCase):
                     close=closers["checkin_greeting"]
                 )
                 plugin._last_request = {"user": 1.0}
+                plugin._last_group_request = {"group": 1.0}
                 plugin._checkin_flow_locks = {"user": asyncio.Lock()}
                 plugin.image_index = SimpleNamespace(close=closers["image_index"])
                 plugin.checkin_store = object()
@@ -429,6 +430,7 @@ class MainErrorHandlingTest(unittest.IsolatedAsyncioTestCase):
                 self.assertIsNone(plugin.image_index)
                 self.assertIsNone(plugin.checkin_store)
                 self.assertEqual(plugin._last_request, {})
+                self.assertEqual(plugin._last_group_request, {})
                 self.assertEqual(plugin._checkin_flow_locks, {})
 
     async def test_search_command_accepts_empty_query(self):

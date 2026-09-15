@@ -202,7 +202,10 @@ class SearchMixin:
     ):
         """搜索并发送图片；Lolicon 失败时按需回退 Pixiv。"""
         # 频率限制
-        wait = self._check_rate_limit(event.get_sender_id())
+        wait = self._check_rate_limit(
+            str(event.get_sender_id() or ""),
+            str(event.get_group_id() or ""),
+        )
         if wait > 0:
             logger.debug(
                 f"{LOG_PREFIX} 搜索请求触发频率限制: retry_after_seconds={wait}"

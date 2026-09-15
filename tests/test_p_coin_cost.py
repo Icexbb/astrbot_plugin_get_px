@@ -150,7 +150,7 @@ class _SearchFlowHarness(SearchMixin):
     def _cfg_bool(self, key, default):
         return bool(self.config.get(key, default))
 
-    def _check_rate_limit(self, user_id):
+    def _check_rate_limit(self, user_id, group_id=""):
         return 0
 
     def _forward_threshold(self):

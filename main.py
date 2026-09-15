@@ -116,6 +116,7 @@ class GetPxPlugin(
             self._cfg_str("lolicon_image_proxy_origins", "")
         )
         self._last_request: dict[str, float] = {}
+        self._last_group_request: dict[str, float] = {}
         self.data_dir: Path | None = None
         self.image_index: ImageIndexStore | None = None
         self.plugin_web_api = PluginWebApi(
@@ -337,6 +338,7 @@ class GetPxPlugin(
                 f"error_type={type(exc).__name__}"
             )
         self._last_request.clear()
+        self._last_group_request.clear()
         locks = getattr(self, "_checkin_flow_locks", None)
         if locks is not None:
             locks.clear()
@@ -675,24 +677,42 @@ class GetPxPlugin(
     # 工具方法
     # ──────────────────────────────────────────────────────────────
 
-    def _check_rate_limit(self, user_id: str) -> int:
-        """检查用户请求频率，返回需等待秒数（0 表示可立即请求）。"""
-        rate_limit = self._cfg_int("rate_limit_seconds", 3, 0, 60)
-        if rate_limit <= 0:
-            return 0
+    def _check_rate_limit(self, user_id: str, group_id: str = "") -> int:
+        """检查用户和群请求频率，返回需等待秒数（0 表示可立即请求）。"""
+        user_limit = self._cfg_int("rate_limit_seconds", 3, 0, 3600)
+        group_limit = self._cfg_int("group_rate_limit_seconds", 0, 0, 3600)
         now = time.monotonic()
         if len(self._last_request) > 1024:
-            cutoff = now - max(float(rate_limit) * 2, 60.0)
+            cutoff = now - max(float(user_limit) * 2, 60.0)
             self._last_request = {
                 key: timestamp
                 for key, timestamp in self._last_request.items()
                 if timestamp >= cutoff
             }
-        last = self._last_request.get(user_id, 0.0)
-        elapsed = now - last
-        if elapsed < rate_limit:
-            return int(rate_limit - elapsed) + 1
-        self._last_request[user_id] = now
+        if len(self._last_group_request) > 1024:
+            cutoff = now - max(float(group_limit) * 2, 60.0)
+            self._last_group_request = {
+                key: timestamp
+                for key, timestamp in self._last_group_request.items()
+                if timestamp >= cutoff
+            }
+
+        waits = []
+        if user_limit > 0:
+            elapsed = now - self._last_request.get(user_id, 0.0)
+            if elapsed < user_limit:
+                waits.append(int(user_limit - elapsed) + 1)
+        if group_id and group_limit > 0:
+            elapsed = now - self._last_group_request.get(group_id, 0.0)
+            if elapsed < group_limit:
+                waits.append(int(group_limit - elapsed) + 1)
+        if waits:
+            return max(waits)
+
+        if user_limit > 0:
+            self._last_request[user_id] = now
+        if group_id and group_limit > 0:
+            self._last_group_request[group_id] = now
         return 0
 
     def _checkin_flow_lock(self, user_id: str) -> asyncio.Lock:
@@ -762,6 +782,7 @@ class GetPxPlugin(
         "checkin_theme_cost": "checkin_shop",
         "request_timeout": "runtime",
         "rate_limit_seconds": "runtime",
+        "group_rate_limit_seconds": "runtime",
         "webui_font_source": "runtime",
         "_grouped_config_migrated": "runtime",
     }

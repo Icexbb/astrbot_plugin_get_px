@@ -72,7 +72,8 @@
 | 字段 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `request_timeout` | `float` | `30.0` | 单张图片下载最大等待，5–120 秒 |
-| `rate_limit_seconds` | `int` | `3` | 同一用户两次请求最小间隔，0 禁用，0–60 秒 |
+| `rate_limit_seconds` | `int` | `3` | 同一用户两次请求最小间隔，0 禁用，0–3600 秒 |
+| `group_rate_limit_seconds` | `int` | `0` | 同一群内两次请求最小间隔，0 禁用，0–3600 秒；私聊不受影响 |
 | `webui_font_source` | `enum` | `mirror` | 插件管理中心 Google Fonts 加载方式：`mirror`(国内镜像)/`official`/`none` |
 
 ## 会话内容安全策略

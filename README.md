@@ -225,6 +225,7 @@ WebUI 配置页按以下 6 组折叠展示，分组细节与维护规则见 [doc
 | `checkin_ai_greeting_timeout` | 单次问候模型调用超时秒数；失败后回退本地文案 | `8.0` |
 | `checkin_hitokoto_timeout` | 一言 API 请求超时秒数；失败后回退本地文案 | `5.0` |
 | `rate_limit_seconds` | 同一用户请求频率限制，单位秒；`0` 为禁用 | `3` |
+| `group_rate_limit_seconds` | 同一群请求频率限制，单位秒；`0` 为禁用，私聊不受影响 | `0` |
 | `webui_font_source` | WebUI 字体来源：`mirror`、`official`、`none` | `mirror` |
 
 </details>

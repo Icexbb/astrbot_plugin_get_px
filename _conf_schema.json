@@ -464,10 +464,21 @@
         "default": 3,
         "slider": {
           "min": 0,
-          "max": 60,
+          "max": 3600,
           "step": 1
         },
         "hint": "同一用户两次请求的最小间隔，设为 0 禁用。防止刷屏。"
+      },
+      "group_rate_limit_seconds": {
+        "description": "群请求频率限制（秒）",
+        "type": "int",
+        "default": 0,
+        "slider": {
+          "min": 0,
+          "max": 3600,
+          "step": 1
+        },
+        "hint": "同一群内两次请求的最小间隔，设为 0 禁用。防止群内刷屏。"
       },
       "_grouped_config_migrated": {
         "description": "分组配置迁移标记",
@@ -698,6 +709,12 @@
     "description": "旧扁平键（过渡版，迁移后移除）",
     "type": "int",
     "default": 3,
+    "invisible": true
+  },
+  "group_rate_limit_seconds": {
+    "description": "旧扁平键（过渡版，迁移后移除）",
+    "type": "int",
+    "default": 0,
     "invisible": true
   },
   "_grouped_config_migrated": {
