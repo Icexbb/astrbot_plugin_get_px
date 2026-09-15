@@ -13,6 +13,7 @@
 | `max_count` | `int` | `5` | 单次指令最多发送张数，范围 1–20 |
 | `p_coin_cost` | `int` | `20` | `/p` 成功发图每张金币，范围 0–200；0 免费 |
 | `image_quality` | `enum` | `original` | `original`/`large`/`medium`；超阈值自动降级 |
+| `image_send_method` | `enum` | `file` | `url` 直接发送地址、`file` 下载后按文件路径发送、`byte` 下载后按 Base64 发送；URL 模式不执行大小检查和自动降级 |
 | `auto_downgrade_original_mb` | `float` | `3.0` | 原图超过此 MiB 时降级，范围 0–25；0 禁用降级 |
 | `forward_threshold` | `int` | `1` | 下载张数严格大于此值时合并转发（仅 aiocqhttp）；0 始终合并，范围 0–20 |
 | `auto_trigger_enabled` | `bool` | `false` | 群内自然语言（「来份/张图」）自动触发发图 |
@@ -97,5 +98,6 @@
 - `forward_threshold` 按下载张数判断，仅 aiocqhttp 合并转发；旧 `send_as_forward` 仅在新字段缺失时兼容（`true`→0，`false`→20）。
 - `dedupe_days` 缩短天数会在重载时清理超期记录，增加天数无法恢复已清理历史。
 - `image_quality` 不影响签到背景，签到卡/日历背景画质由 `checkin_card_quality_tier` 独立控制。
+- `image_send_method` 只影响 `/p` 与自然语言发图；签到卡、日历和帮助图继续通过本地文件发送。
 - `pixiv_refresh_token` 留空时 Lolicon 失败直接报错，不进行 Pixiv 回退。
 - schema 顶层保留兼容迁移用的 `invisible` 旧扁平键。AstrBot 4.27+ 在加载插件配置时会删除 schema 之外的键，这些 invisible 键让旧扁平值在框架裁剪前存活，`_migrate_grouped_config` 随后搬到对应分组。迁移完成后下一版本可删除这些顶层键。

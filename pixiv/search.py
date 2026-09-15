@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 
 from astrbot.api.all import Image, Plain, logger
 from astrbot.api.event import AstrMessageEvent
 from astrbot.api.message_components import Node, Nodes
 
 from .constants import AIOCQHTTP_PLATFORM, MAX_IMAGE_COUNT
-from .downloader import cleanup
-from .safety import ContentSafetyPolicy, STRICT_CONTENT_SAFETY_POLICY
-
+from .downloader import cleanup, iter_image_quality_urls
+from .safety import STRICT_CONTENT_SAFETY_POLICY, ContentSafetyPolicy
 
 LOG_PREFIX = "[GetPx]"
 DEFAULT_AUTO_DOWNGRADE_ORIGINAL_LIMIT_MB = 3.0
@@ -44,6 +44,19 @@ class SearchMixin:
 
     def _p_unit_cost(self) -> int:
         return self._cfg_int("p_coin_cost", 20, 0, 200)
+
+    def _image_send_method(self) -> str:
+        method = self._cfg_str("image_send_method", "file").strip().lower()
+        return method if method in {"url", "file", "byte"} else "file"
+
+    @staticmethod
+    async def _build_image_component(locator: str, method: str) -> Image:
+        if method == "url":
+            return Image.fromURL(locator)
+        if method == "byte":
+            image_bytes = Path(locator).read_bytes()
+            return Image.fromBytes(image_bytes)
+        return Image.fromFileSystem(locator)
 
     def _p_charging_active(self) -> bool:
         return (
@@ -315,7 +328,8 @@ class SearchMixin:
                 str(illust.get("id") or "") for illust in chosen if illust.get("id")
             }
 
-        # 下载所有图片
+        # 按发送方式准备所有图片。URL 模式不下载；file/byte 共用下载链路。
+        send_method = self._image_send_method()
         downloaded: list[tuple[dict, str, str, int]] = []
         temp_paths: list[str] = []
         try:
@@ -324,6 +338,15 @@ class SearchMixin:
                 title = illust.get("title", "无标题")
 
                 try:
+                    if send_method == "url":
+                        candidate = next(
+                            iter_image_quality_urls(illust, quality), None
+                        )
+                        if candidate is None:
+                            raise RuntimeError("无可发送 URL")
+                        actual_q, image_url = candidate
+                        downloaded.append((illust, image_url, actual_q, 0))
+                        continue
                     path, actual_q, file_size = await self.downloader.download_for_send(
                         illust,
                         quality,
@@ -374,7 +397,7 @@ class SearchMixin:
                     illust_id = illust.get("id", "?")
                     content = [
                         Plain(f"🎨 {title} (ID: {illust_id})"),
-                        Image.fromFileSystem(path),
+                        await self._build_image_component(path, send_method),
                     ]
                     nodes.nodes.append(
                         Node(
@@ -447,7 +470,7 @@ class SearchMixin:
                         illust_id = illust.get("id", "?")
                         content = [
                             Plain(f"🎨 {title} (ID: {illust_id})"),
-                            Image.fromFileSystem(path),
+                            await self._build_image_component(path, send_method),
                         ]
                         # 逐条发送（带重试机制）
                         for attempt in range(1, max_retries + 1):
@@ -501,7 +524,7 @@ class SearchMixin:
                     illust_id = illust.get("id", "?")
                     content = [
                         Plain(f"🎨 {title} (ID: {illust_id})"),
-                        Image.fromFileSystem(path),
+                        await self._build_image_component(path, send_method),
                     ]
                     # 逐条发送（带重试机制）
                     max_retries = 3

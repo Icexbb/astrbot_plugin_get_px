@@ -62,6 +62,17 @@
         ],
         "hint": "original=原图（最大，下载慢）, large=大图（推荐）, medium=中图（最小，下载快）。若原图超过自动降级阈值会降级到更低质量，指定质量不可用也会自动降级。"
       },
+      "image_send_method": {
+        "description": "图片发送方式",
+        "type": "string",
+        "default": "file",
+        "options": [
+          "url",
+          "file",
+          "byte"
+        ],
+        "hint": "url=直接通过 URL 发送（最快，不下载），file=下载后通过文件路径发送，byte=下载后通过 Base64 发送。URL 模式不执行文件大小检查和原图自动降级。"
+      },
       "auto_downgrade_original_mb": {
         "description": "原图自动降级阈值（MiB）",
         "type": "float",
@@ -539,6 +550,12 @@
     "description": "旧扁平键（过渡版，迁移后移除）",
     "type": "string",
     "default": "original",
+    "invisible": true
+  },
+  "image_send_method": {
+    "description": "旧扁平键（过渡版，迁移后移除）",
+    "type": "string",
+    "default": "file",
     "invisible": true
   },
   "auto_downgrade_original_mb": {

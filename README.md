@@ -203,6 +203,7 @@ WebUI 配置页按以下 6 组折叠展示，分组细节与维护规则见 [doc
 | `private_content_safety_policies` | 私聊内容安全策略列表：字段同群聊策略，按用户 ID 独立生效；配置页或管理中心均可维护 | `[]` |
 | `request_timeout` | 单张图片下载超时，单位秒 | `30` |
 | `image_quality` | 图片质量：`original`、`large`、`medium` | `original` |
+| `image_send_method` | 图片发送方式：`url`（直接发送地址）、`file`（下载后按文件路径发送）、`byte`（下载后按 Base64 发送）；URL 模式不执行大小检查和自动降级 | `file` |
 | `auto_downgrade_original_mb` | 原图超过该大小时自动降级，单位 MiB；`0` 为禁用 | `3.0` |
 | `forward_threshold` | 仅 aiocqhttp：成功下载图片数严格大于此值时合并转发；`0` 始终合并转发，`1` 表示超过 1 张才合并转发；其他平台自动逐条发送 | `1` |
 | `auto_trigger_enabled` | 自然语言自动触发 | `false` |
